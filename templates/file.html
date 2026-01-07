@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>File details</h2>
+
+<div class="card">
+    <strong>{{ file.filename }}</strong><br>
+    <span class="muted">{{ file.size }} bytes</span>
+</div>
+
+<div class="card">
+    <strong>SHA256 checksum</strong><br>
+    <code>{{ file.sha256 }}</code>
+</div>
+
+<div class="card">
+    <strong>Expiry</strong><br>
+    {% if file.expires %}
+        {{ file.expires }}
+    {% else %}
+        Never
+    {% endif %}
+</div>
+
+<div class="card">
+    <strong>Public download</strong><br>
+    <a href="{{ file.download }}">{{ file.download }}</a>
+</div>
+
+{% if file.preview %}
+<div class="card">
+    <strong>Text preview (first 15KB)</strong>
+    <pre>{{ file.preview }}</pre>
+</div>
+{% endif %}
+
+<a href="/">Back to dashboard</a>
+
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Admin panel</h2>
+
+<div class="card">
+<table>
+    <tr>
+        <th>User</th>
+        <th>Approved</th>
+        <th>Usage</th>
+        <th>Actions</th>
+    </tr>
+
+    {% for u in users %}
+    <tr>
+        <td>{{ u.username }}</td>
+        <td>{{ "Yes" if u.approved else "No" }}</td>
+        <td>{{ u.used }} / {{ u.quota }}</td>
+        <td>
+            <form method="post">
+                <input type="hidden" name="user_id" value="{{ u.id }}">
+
+                {% if not u.approved %}
+                <button name="action" value="approve">Approve</button>
+                {% endif %}
+
+                <input name="value" placeholder="Quota (bytes)">
+                <button name="action" value="quota">Set quota</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+</div>
+
+<a href="/">Back to dashboard</a>
+
+{% endblock %}

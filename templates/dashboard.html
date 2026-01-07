@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Dashboard</h2>
+
+<div class="card">
+    <strong>Storage usage</strong><br><br>
+
+    <div class="donut" style="--percent: {{ percent }}%;">
+        <span>{{ percent }}%</span>
+    </div>
+
+    <div class="muted">
+        {{ used }} / {{ quota }} bytes
+    </div>
+</div>
+
+<div class="card">
+    <strong>Upload files</strong><br><br>
+
+    <form method="post" action="/upload" enctype="multipart/form-data">
+        <input type="file" name="files" multiple required>
+
+        <label class="muted">Expiry</label>
+        <select name="expiry">
+            <option value="never">Never</option>
+            <option value="1">1 day</option>
+            <option value="7">7 days</option>
+            <option value="30">1 month</option>
+        </select>
+
+        <br><br>
+        <button type="submit">Upload</button>
+    </form>
+</div>
+
+{% if is_admin %}
+<div class="card">
+    <a href="/admin">Admin panel</a>
+</div>
+{% endif %}
+
+<a href="/logout">Logout</a>
+
+{% endblock %}
