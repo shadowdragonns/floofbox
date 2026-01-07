@@ -110,8 +110,8 @@ def main():
     print("Run the app with:")
     print("  python app.py")
 
-    # Optional systemd
-   svc = ask("Install as systemd service? (y/n)", "n")
+   
+svc = ask("Install as systemd service? (y/n)", "n")
 if svc.lower() == "y":
     service_text = f"""
 [Unit]
