@@ -24,3 +24,7 @@ pip install -r requirments.txt
 ```bash
 python setup.py
 ```
+### or
+'''bash
+python3 setup.py
+```
