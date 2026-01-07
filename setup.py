@@ -6,7 +6,8 @@ from pathlib import Path
 import sys
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 PYTHON_BIN = sys.executable
-from app import hash_password  # reuse your password logic
+from security import hash_password
+
 
 DB_FILE = "vault.db"
 CONFIG_FILE = "config.py"

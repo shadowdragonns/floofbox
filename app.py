@@ -12,36 +12,7 @@ if not all([
     config.MASTER_KEY
 ]):
     raise RuntimeError("Config not initialised. Run setup.py first.")
-
-ITERATIONS = 200_000
-SALT_SIZE = 16
-
-def hash_password(password: str) -> str:
-    salt = os.urandom(SALT_SIZE)
-    dk = hashlib.pbkdf2_hmac(
-        "sha512",
-        password.encode(),
-        salt,
-        ITERATIONS
-    )
-    return base64.b64encode(
-        salt + dk
-    ).decode()
-
-def check_password(password: str, stored: str) -> bool:
-    raw = base64.b64decode(stored.encode())
-    salt = raw[:SALT_SIZE]
-    stored_dk = raw[SALT_SIZE:]
-
-    new_dk = hashlib.pbkdf2_hmac(
-        "sha512",
-        password.encode(),
-        salt,
-        ITERATIONS
-    )
-
-    return hmac.compare_digest(stored_dk, new_dk)
-
+from security import hash_password, check_password
 from flask import (
     Flask, request, redirect, abort,
     send_file, render_template
