@@ -26,6 +26,6 @@ python setup.py
 ```
 ### or
 
-'''bash
+```bash
 python3 setup.py
-'''
+```
