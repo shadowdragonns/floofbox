@@ -9,7 +9,7 @@
 </div>
 
 <div class="card">
-    <strong>SHA256 checksum</strong><br>
+    <strong>SHA-256 checksum</strong><br>
     <code>{{ file.sha256 }}</code>
 </div>
 
@@ -23,8 +23,10 @@
 </div>
 
 <div class="card">
-    <strong>Public download</strong><br>
-    <a href="{{ file.download }}">{{ file.download }}</a>
+    <strong>Share link</strong><br><br>
+
+    <button onclick="copyLink()">Copy download link</button>
+    <span id="copied" class="muted" style="display:none;">Copied ✓</span>
 </div>
 
 {% if file.preview %}
@@ -34,6 +36,27 @@
 </div>
 {% endif %}
 
+<div class="card">
+    <form method="post"
+          action="/file/{{ file.id }}/delete"
+          onsubmit="return confirm('This will permanently delete the file. Continue?');">
+        <button class="danger">Delete file</button>
+    </form>
+</div>
+
 <a href="/">Back to dashboard</a>
+
+<script>
+function copyLink() {
+    const url = "https://box.floofyredpanda.com{{ file.download }}";
+    navigator.clipboard.writeText(url).then(() => {
+        const msg = document.getElementById("copied");
+        msg.style.display = "inline";
+        setTimeout(() => {
+            msg.style.display = "none";
+        }, 2000);
+    });
+}
+</script>
 
 {% endblock %}

@@ -208,14 +208,79 @@ def logout():
 @app.route("/")
 @login_required
 def dashboard():
-    percent = int((current_user.used / current_user.quota) * 100) if current_user.quota else 0
+    percent = int(
+        (current_user.used / current_user.quota) * 100
+    ) if current_user.quota else 0
+
+    with db() as con:
+        rows = con.execute("""
+            SELECT id, filename, size, expires
+            FROM files
+            WHERE user_id=?
+            ORDER BY id DESC
+        """, (current_user.id,)).fetchall()
+
+    files = []
+    now = int(time.time())
+
+    for r in rows:
+        files.append({
+            "id": r[0],
+            "filename": r[1],
+            "size": r[2],
+            "expires": (
+                "Expired"
+                if r[3] and r[3] < now
+                else time.strftime("%Y-%m-%d", time.localtime(r[3]))
+                if r[3]
+                else None
+            )
+        })
+
     return render_template(
         "dashboard.html",
         used=current_user.used,
         quota=current_user.quota,
         percent=percent,
+        files=files,
         is_admin=current_user.is_admin
     )
+
+@app.route("/file/<int:file_id>/delete", methods=["POST"])
+@login_required
+def delete_file(file_id):
+    with db() as con:
+        cur = con.execute("""
+            SELECT path, size
+            FROM files
+            WHERE id=? AND user_id=?
+        """, (file_id, current_user.id))
+        row = cur.fetchone()
+
+        if not row:
+            abort(404)
+
+        path, size = row
+
+        # delete file from disk
+        try:
+            os.remove(path)
+        except FileNotFoundError:
+            pass
+
+        # delete DB entry
+        con.execute(
+            "DELETE FROM files WHERE id=?",
+            (file_id,)
+        )
+
+        # refund quota
+        con.execute(
+            "UPDATE users SET used = used - ? WHERE id=?",
+            (size, current_user.id)
+        )
+
+    return redirect("/")
 
 @app.route("/upload", methods=["POST"])
 @login_required
@@ -291,13 +356,15 @@ def file_page(file_id):
     return render_template(
         "file.html",
         file={
-            "filename": row[2],
-            "sha256": row[3],
-            "size": row[6],
-            "expires": row[7],
-            "download": f"/download/{row[3]}/{row[4]}/{row[2]}",
-            "preview": preview
-        }
+    "id": row[0],
+    "filename": row[2],
+    "sha256": row[3],
+    "size": row[6],
+    "expires": row[7],
+    "download": f"/download/{row[3]}/{row[4]}/{row[2]}",
+    "preview": preview
+}
+
     )
 
 @app.route("/download/<sha>/<rand>/<name>")

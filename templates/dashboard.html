@@ -3,6 +3,7 @@
 
 <h2>Dashboard</h2>
 
+<!-- Storage quota -->
 <div class="card">
     <strong>Storage usage</strong><br><br>
 
@@ -11,10 +12,11 @@
     </div>
 
     <div class="muted">
-        {{ used }} / {{ quota }} bytes
+        {{ used }} / {{ quota }} bytes used
     </div>
 </div>
 
+<!-- Upload form -->
 <div class="card">
     <strong>Upload files</strong><br><br>
 
@@ -34,6 +36,52 @@
     </form>
 </div>
 
+<!-- File list -->
+{% if files %}
+<div class="card">
+    <strong>Your files</strong><br><br>
+
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Size</th>
+            <th>Expires</th>
+            <th>Actions</th>
+        </tr>
+
+        {% for f in files %}
+        <tr>
+            <td>
+                <a href="/file/{{ f.id }}">
+                    {{ f.filename }}
+                </a>
+            </td>
+            <td>{{ f.size }} bytes</td>
+            <td>
+                {% if f.expires %}
+                    {{ f.expires }}
+                {% else %}
+                    Never
+                {% endif %}
+            </td>
+            <td>
+                <form method="post"
+                      action="/file/{{ f.id }}/delete"
+                      onsubmit="return confirm('Delete this file permanently?');">
+                    <button class="danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% else %}
+<div class="card muted">
+    No files uploaded yet.
+</div>
+{% endif %}
+
+<!-- Admin link -->
 {% if is_admin %}
 <div class="card">
     <a href="/admin">Admin panel</a>
