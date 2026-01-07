@@ -1,5 +1,5 @@
 # floofbox
-a dropbox like flask script for a nas
+a dropbox like flask script for a linux based nas
 
 
 
