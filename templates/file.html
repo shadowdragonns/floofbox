@@ -5,7 +5,7 @@
 
 <div class="card">
     <strong>{{ file.filename }}</strong><br>
-    <span class="muted">{{ file.size }} bytes</span>
+    <span class="muted">{{ file.size }}</span>
 </div>
 
 <div class="card">
@@ -48,7 +48,7 @@
 
 <script>
 function copyLink() {
-    const url = "https://box.floofyredpanda.com{{ file.download }}";
+    const url = "https://{{ file.download }}";
     navigator.clipboard.writeText(url).then(() => {
         const msg = document.getElementById("copied");
         msg.style.display = "inline";

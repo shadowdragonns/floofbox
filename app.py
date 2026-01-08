@@ -227,7 +227,7 @@ def dashboard():
         files.append({
             "id": r[0],
             "filename": r[1],
-            "size": r[2],
+            "size": human_filesize(r[2]),
             "expires": (
                 "Expired"
                 if r[3] and r[3] < now
@@ -239,8 +239,8 @@ def dashboard():
 
     return render_template(
         "dashboard.html",
-        used=current_user.used,
-        quota=current_user.quota,
+        used=human_filesize(current_user.used),
+        quota=human_filesize(current_user.quota),
         percent=percent,
         files=files,
         is_admin=current_user.is_admin
@@ -281,7 +281,11 @@ def delete_file(file_id):
         )
 
     return redirect("/")
-
+def human_filesize(size):
+    for unit in ["bytes", "KB", "MB", "GB", "TB"]:
+        if size < 1024 or unit == "TB":
+            return f"{size:.2f} {unit}" if unit != "bytes" else f"{size} {unit}"
+        size /= 1024
 @app.route("/upload", methods=["POST"])
 @login_required
 def upload():
@@ -352,16 +356,16 @@ def file_page(file_id):
             blob = f.read()
         n, ct = blob[:12], blob[12:]
         preview = cipher.decrypt(n, ct, None)[:15*1024].decode(errors="replace")
-
+    size = human_filesize(row[6])
     return render_template(
         "file.html",
         file={
     "id": row[0],
     "filename": row[2],
     "sha256": row[3],
-    "size": row[6],
+    "size": size,
     "expires": row[7],
-    "download": f"/download/{row[3]}/{row[4]}/{row[2]}",
+    "download": f"{config.Domain}/download/{row[3]}/{row[4]}/{row[2]}",
     "preview": preview
 }
 

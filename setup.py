@@ -44,7 +44,7 @@ def main():
     # Quota
     quota_gb = ask("Default user quota (GB)", "75")
     quota_bytes = int(quota_gb) * 1024 * 1024 * 1024
-
+    domain = ask("Please enter your domain name eg example.com or www.example.com or if useing tailscale <devicehostname>.<tailnetname>.ts.net")
     # Host / port
     host = ask("Host", "127.0.0.1")
     port = ask("Port", "5000")
@@ -59,7 +59,7 @@ def main():
         f.write(f'HOST = "{host}"\n')
         f.write(f"PORT = {port}\n")
         f.write(f'MASTER_KEY = "{master_key}"\n')
-
+        f.write(f'Domain = "{domain}"\n')
     # Initialise DB
     con = sqlite3.connect(DB_FILE)
     cur = con.cursor()
