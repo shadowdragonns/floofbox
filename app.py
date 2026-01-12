@@ -23,6 +23,8 @@ from flask_login import (
 )
 from werkzeug.utils import secure_filename
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from flask import Response, stream_with_context
+import mimetypes
 
 # -------------------------------------------------
 # CONFIG
@@ -134,6 +136,71 @@ def user_cipher(user):
 # -------------------------------------------------
 # ROUTES
 # -------------------------------------------------
+@app.route("/embed/<sha>/<rand>/<name>")
+def embed(sha, rand, name):
+    with db() as con:
+        cur = con.execute("""
+        SELECT files.path, users.enc_key, files.size
+        FROM files
+        JOIN users ON files.user_id = users.id
+        WHERE files.sha256=? AND files.randhex=? AND files.filename=?
+        """, (sha, rand, name))
+        row = cur.fetchone()
+
+    if not row:
+        abort(404)
+
+    enc_path, enc_key_blob, size = row
+
+    # decrypt file ONCE to a temp file
+    n = enc_key_blob[:12]
+    key = AESGCM(MASTER_KEY).decrypt(n, enc_key_blob[12:], None)
+    cipher = AESGCM(key)
+
+    with open(enc_path, "rb") as f:
+        blob = f.read()
+
+    pt = cipher.decrypt(blob[:12], blob[12:], None)
+
+    tmp = f"/tmp/{secrets.token_hex(8)}"
+    with open(tmp, "wb") as out:
+        out.write(pt)
+
+    range_header = request.headers.get("Range", None)
+    mime = mimetypes.guess_type(name)[0] or "application/octet-stream"
+
+    if not range_header:
+        return send_file(
+            tmp,
+            mimetype=mime,
+            as_attachment=False
+        )
+
+    # Handle Range requests
+    bytes_unit, byte_range = range_header.split("=")
+    start, end = byte_range.split("-")
+
+    start = int(start)
+    end = int(end) if end else size - 1
+    length = end - start + 1
+
+    def generate():
+        with open(tmp, "rb") as f:
+            f.seek(start)
+            yield f.read(length)
+
+    rv = Response(
+        stream_with_context(generate()),
+        status=206,
+        mimetype=mime,
+        direct_passthrough=True
+    )
+
+    rv.headers.add("Content-Range", f"bytes {start}-{end}/{size}")
+    rv.headers.add("Accept-Ranges", "bytes")
+    rv.headers.add("Content-Length", str(length))
+
+    return rv
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
