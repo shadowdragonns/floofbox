@@ -158,7 +158,7 @@ print("File Vault service installed and started.")
 
     print("\nSystemd files generated.")
     print("To install the service, run:")
-    print("  sudo python install_service.py")
+    print(f"  sudo {sys.executable} install_service.py")
 
 
 if __name__ == "__main__":
